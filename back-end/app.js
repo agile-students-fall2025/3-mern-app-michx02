@@ -7,10 +7,27 @@ const mongoose = require('mongoose')
 const app = express() // instantiate an Express object
 app.use(morgan('dev', { skip: (req, res) => process.env.NODE_ENV === 'test' })) // log all incoming requests, except when in unit test mode.  morgan has a few logging default styles - dev is a nice concise color-coded style
 app.use(cors()) // allow cross-origin resource sharing
+const path = require('path');
 
 // use express's builtin body-parser middleware to parse any data included in a request
 app.use(express.json()) // decode JSON-formatted incoming POST data
 app.use(express.urlencoded({ extended: true })) // decode url-encoded incoming POST data
+// static hosting 
+app.use('/static', express.static(path.join(__dirname, 'public')));
+
+//for email
+app.get('/about', (req, res) => {
+  res.set('Cache-Control', 'no-store'); // avoid stale cache during dev
+  const origin = `${req.protocol}://${req.get('host')}`;  // -> http://localhost:5002
+  res.json({
+    title: 'About Us',
+    paragraphs: [
+      "Hi, I’m Michael Mvano. I study at NYU.",
+      "I’m into Data Analytics, ML/AI, and building products."
+    ],
+    photoUrl: `${origin}/static/mvano_photo.jpg`
+  });
+});
 
 // connect to database
 mongoose
